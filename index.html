@@ -10,15 +10,78 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="myAjax.js"></script>
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8">.col-md-8</div>
-            <div class="col-md-4">.col-md-4</div>
+        <div class="form-group has-success">
+            <label class="control-label" for="urlBox">输入首页地址</label>
+            <input type="text" class="form-control" id="urlBox" placeholder="URL">
+            <button type="submit" class="btn btn-primary" onclick="getAll()">确定</button>
+        </div>
+        <div id="output">
         </div>
     </div>
+    <script type="text/javascript">
+    function getAll() {
+        var url = $( "#urlBox" ).val()
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            success: function(data) {
+                extractPlainText(data.responseText)
+                analysis(url , data.responseText);
+            },
+            error:function() {
+                alert('Error');
+            }
+        });
+    }
+    function analysis(url, homepage) {
+        var start = '<div class="mainNewsContent NewsContent"'
+        var cc = '<p align="center">'
+        homepage = homepage.substring(homepage.indexOf(start))
+        homepage = homepage.substring(homepage.indexOf(cc))
+        homepage = homepage.substring(0, homepage.indexOf('下一页')) + "</a></b></p>"
+        var topic = url.substring(url.lastIndexOf('/') + 1)
+        topic = topic.substring(0, topic.indexOf('.'))
+        homepage = homepage.substring(0, homepage.lastIndexOf(topic))
+        homepage = homepage.substring(homepage.lastIndexOf(topic))
+        homepage = homepage.substring(homepage.indexOf('_') + 1, homepage.indexOf('.'))
+        var maxN = homepage
+        var baseUrl = url.substring(0, url.lastIndexOf('/')+1) + topic
+        loopLoad(2, maxN, baseUrl)
+    }
+    function out(content) {
+        $("#output").append(content)
+    }
+    function extractPlainText(allText) {
+        var start = '<div class="mainNewsContent NewsContent"'
+        var cc = '<p align="center">'
+        allText = allText.substring(allText.indexOf(start))
+        allText = allText.substring(0, allText.indexOf(cc)) + '</div>'
+        out(allText)
+    }
+    function loopLoad(currentIndex, maxIndex, baseUrl) {
+        var url = baseUrl + '_' + currentIndex + '.html'
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            success: function(data) {
+                extractPlainText(data.responseText)
+                if(currentIndex <= maxIndex) {
+                    loopLoad(currentIndex + 1, maxIndex, baseUrl)
+                }
+            },
+            error:function() {
+                alert('Error');
+            }
+        });
+    }
+    </script>
 </body>
 </html>
