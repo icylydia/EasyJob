@@ -20,12 +20,14 @@
             <label class="control-label" for="urlBox">输入首页地址</label>
             <input type="text" class="form-control" id="urlBox" placeholder="URL">
             <button type="submit" class="btn btn-primary" onclick="getAll()">确定</button>
+            <label class="inline" id="hint"></label>
         </div>
         <div id="output">
         </div>
     </div>
     <script type="text/javascript">
     function getAll() {
+        $( "#hint" ).html("加载中，请稍后……")
         var url = $( "#urlBox" ).val()
         $.ajax({
             type: 'GET',
@@ -75,6 +77,8 @@
                 extractPlainText(data.responseText)
                 if(currentIndex <= maxIndex) {
                     loopLoad(currentIndex + 1, maxIndex, baseUrl)
+                } else {
+                    $( "#hint" ).html("加载中完成，共计" + maxIndex + "页。")
                 }
             },
             error:function() {
